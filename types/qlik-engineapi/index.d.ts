@@ -9680,6 +9680,25 @@ declare namespace EngineAPI {
 }
 //#endregion
 
+//#region AppObjectList
+declare namespace EngineAPI {
+    /**
+     * AppObjectListDef
+     */
+    interface IAppObjectListDef {
+        /**
+         * Type of the list
+         */
+        qType: "sheet";
+
+        /**
+         * Data typ JSON
+         */
+        qData: any;
+    }
+}
+//#endregion
+
 declare namespace enigmaJS {
     interface IGeneratedAPI {
     }
