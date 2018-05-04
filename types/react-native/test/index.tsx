@@ -17,14 +17,17 @@ import {
     AppState,
     AppStateIOS,
     BackAndroid,
+    BackHandler,
     Button,
     DataSourceAssetCallback,
     DeviceEventEmitterStatic,
     Dimensions,
+    ImageStyle,
     InteractionManager,
     ListView,
     ListViewDataSource,
     StyleSheet,
+    StyleProp,
     Systrace,
     Text,
     TextStyle,
@@ -34,6 +37,7 @@ import {
     ViewPagerAndroid,
     FlatList,
     FlatListProperties,
+    ScaledSize,
     SectionList,
     SectionListProperties,
     findNodeHandle,
@@ -42,7 +46,9 @@ import {
     RefreshControl,
     TabBarIOS,
     NativeModules,
-    MaskedView,
+    MaskedViewIOS,
+    TextInput,
+    InputAccessoryView,
 } from "react-native";
 
 declare module "react-native" {
@@ -60,9 +66,19 @@ NativeModules.NativeUntypedModule;
 NativeModules.NativeTypedModule.someFunction();
 NativeModules.NativeTypedModule.someProperty = "";
 
+function dimensionsListener(dimensions: { window: ScaledSize, screen: ScaledSize }) {
+    console.log("window dimensions: ", dimensions.window);
+    console.log("screen dimensions: ", dimensions.screen);
+}
+
 function testDimensions() {
     const { width, height, scale, fontScale } = Dimensions.get(1 === 1 ? "window" : "screen");
+
+    Dimensions.addEventListener('change', dimensionsListener);
+    Dimensions.removeEventListener('change', dimensionsListener);
 }
+
+BackHandler.addEventListener("hardwareBackPress", () => {}).remove();
 
 BackAndroid.addEventListener("hardwareBackPress", () => {});
 
@@ -112,6 +128,20 @@ const stylesAlt = StyleSheet.create({
 });
 
 const welcomeFontSize = StyleSheet.flatten(styles.welcome).fontSize;
+
+const viewStyle: StyleProp<ViewStyle> = {
+  backgroundColor: "#F5FCFF",
+}
+const textStyle: StyleProp<TextStyle> = {
+  fontSize: 20,
+}
+const imageStyle: StyleProp<ImageStyle> = {
+  resizeMode: 'contain',
+}
+
+const viewProperty = StyleSheet.flatten(viewStyle).backgroundColor;
+const textProperty = StyleSheet.flatten(textStyle).fontSize;
+const imageProperty = StyleSheet.flatten(imageStyle).resizeMode;
 
 class CustomView extends React.Component {
     render() {
@@ -350,10 +380,21 @@ class AlertTest extends React.Component {
 class MaskedViewTest extends React.Component {
     render() {
         return (
-            <MaskedView maskElement={<View />}>
+            <MaskedViewIOS maskElement={<View />}>
                 <View />
-            </MaskedView>
+            </MaskedViewIOS>
         );
+    }
+}
+
+class InputAccessoryViewTest extends React.Component {
+    render() {
+        const uniqueID = "foobar";
+        return (
+            <InputAccessoryView nativeID={uniqueID}>
+                <TextInput inputAccessoryViewID={uniqueID} />
+            </InputAccessoryView>
+        )
     }
 }
 

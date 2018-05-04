@@ -3,8 +3,9 @@
 // Definitions by: Iskander Sierra <https://github.com/iskandersierra>
 //                 Samuel DeSota <https://github.com/mrapogee>
 //                 Curtis Layne <https://github.com/clayne11>
+//                 Rasmus Eneman <https://github.com/Pajn>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.4
+// TypeScript Version: 2.6
 
 ///<reference types="react" />
 
@@ -78,13 +79,25 @@ declare module 'recompose' {
 
     // withHandlers: https://github.com/acdlite/recompose/blob/master/docs/API.md#withhandlers
     type EventHandler = Function;
-    type HandleCreators<TOutter> = {
+    // This type is required to infer TOutter
+    type HandleCreatorsStructure<TOutter> = {
         [handlerName: string]: mapper<TOutter, EventHandler>;
     };
-    type HandleCreatorsFactory<TOutter, THandlers> = (initialProps: TOutter) => HandleCreators<TOutter>;
+    // This type is required to infer THandlers
+    type HandleCreatorsHandlers<TOutter, THandlers> = {
+        [P in keyof THandlers]: (props: TOutter) => THandlers[P];
+    };
+    type HandleCreators<TOutter, THandlers> =
+        & HandleCreatorsStructure<TOutter>
+        & HandleCreatorsHandlers<TOutter, THandlers>
+    type HandleCreatorsFactory<TOutter, THandlers> = (initialProps: TOutter) =>
+        HandleCreators<TOutter, THandlers>;
+
     export function withHandlers<TOutter, THandlers>(
-        handlerCreators: HandleCreators<TOutter> | HandleCreatorsFactory<TOutter, THandlers>
-    ): InferableComponentEnhancerWithProps<THandlers, TOutter>;
+        handlerCreators:
+            | HandleCreators<TOutter, THandlers>
+            | HandleCreatorsFactory<TOutter, THandlers>
+    ): InferableComponentEnhancerWithProps<THandlers & TOutter, TOutter>;
 
     // defaultProps: https://github.com/acdlite/recompose/blob/master/docs/API.md#defaultprops
     export function defaultProps<T = {}>(
@@ -133,14 +146,17 @@ declare module 'recompose' {
     >;
 
     // withStateHandlers: https://github.com/acdlite/recompose/blob/master/docs/API.md#withstatehandlers
-    type StateHandler<TState> = (...payload: any[]) => TState | undefined;
-    type StateUpdaters<TOutter, TState> = {
-      [updaterName: string]: (state: TState, props: TOutter) => StateHandler<TState>;
+    type StateHandler<TState> = (...payload: any[]) => Partial<TState> | undefined;
+    type StateHandlerMap<TState> = {
+      [updaterName: string]: StateHandler<TState>;
     };
-    export function withStateHandlers<TState, TUpdaters, TOutter>(
+    type StateUpdaters<TOutter, TState, TUpdaters> = {
+      [updaterName in keyof TUpdaters]: (state: TState, props: TOutter) => StateHandler<TState>;
+    };
+    export function withStateHandlers<TState, TUpdaters extends StateHandlerMap<TState>, TOutter = {}>(
       createProps: TState | mapper<TOutter, TState>,
-      stateUpdaters: StateUpdaters<TOutter, TState>,
-    ): InferableComponentEnhancerWithProps<TUpdaters & TState, TOutter>;
+      stateUpdaters: StateUpdaters<TOutter, TState, TUpdaters>,
+    ): InferableComponentEnhancerWithProps<TOutter & TState & TUpdaters, TOutter>;
 
     // withReducer: https://github.com/acdlite/recompose/blob/master/docs/API.md#withReducer
     type reducer<TState, TAction> = (s: TState, a: TAction) => TState;

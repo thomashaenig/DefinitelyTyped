@@ -1,4 +1,4 @@
-// Type definitions for Sinon 4.0
+// Type definitions for Sinon 4.3
 // Project: http://sinonjs.org/
 // Definitions by: William Sears <https://github.com/mrbigdog2u>
 //                 Jonathan Little <https://github.com/rationull>
@@ -11,10 +11,8 @@
 // sinon uses DOM dependencies which are absent in browser-less environment like node.js
 // to avoid compiler errors this monkey patch is used
 // see more details in https://github.com/DefinitelyTyped/DefinitelyTyped/issues/11351
-// tslint:disable no-empty-interface
-interface Event { }
-interface Document { }
-// tslint:enable no-empty-interface
+interface Event { } // tslint:disable-line no-empty-interface
+interface Document { } // tslint:disable-line no-empty-interface
 
 declare namespace Sinon {
     interface SinonSpyCallApi {
@@ -28,6 +26,8 @@ declare namespace Sinon {
         calledOn(obj: any): boolean;
         calledWith(...args: any[]): boolean;
         calledWithExactly(...args: any[]): boolean;
+        calledOnceWith(...args: any[]): boolean;
+        calledOnceWithExactly(...args: any[]): boolean;
         calledWithMatch(...args: any[]): boolean;
         notCalledWith(...args: any[]): boolean;
         notCalledWithMatch(...args: any[]): boolean;
@@ -89,7 +89,9 @@ declare namespace Sinon {
         invokeCallback(...args: any[]): void;
         getCall(n: number): SinonSpyCall;
         getCalls(): SinonSpyCall[];
+        /// @deprecated Use resetHistory() instead
         reset(): void;
+        resetHistory(): void;
         printf(format: string, ...args: any[]): string;
         restore(): void;
     }
@@ -152,7 +154,7 @@ declare namespace Sinon {
 
     interface SinonStubStatic {
         (): SinonStub;
-        (obj: any): SinonStub;
+        <T>(obj: T): SinonStubbedInstance<T>;
         <T>(obj: T, method: keyof T): SinonStub;
         <T>(obj: T, method: keyof T, func: Function): SinonStub;
     }
@@ -232,10 +234,15 @@ declare namespace Sinon {
         setSystemTime(date: Date): void;
     }
 
+    interface SinonFakeTimersConfig {
+        now: number | Date;
+        toFake: string[];
+        shouldAdvanceTime: boolean;
+    }
+
     interface SinonFakeTimersStatic {
-        (): SinonFakeTimers;
-        (...timers: string[]): SinonFakeTimers;
-        (now: number, ...timers: string[]): SinonFakeTimers;
+        (now?: number | Date): SinonFakeTimers;
+        (config?: Partial<SinonFakeTimersConfig>): SinonFakeTimers;
     }
 
     interface SinonStatic {
@@ -293,14 +300,10 @@ declare namespace Sinon {
         FakeXMLHttpRequest: SinonFakeXMLHttpRequest;
     }
 
-    interface SinonFakeServer {
+    interface SinonFakeServer extends SinonFakeServerOptions {
         // Properties
-        autoRespond: boolean;
-        autoRespondAfter: number;
-        fakeHTTPMethods: boolean;
         getHTTPMethod(request: SinonFakeXMLHttpRequest): string;
         requests: SinonFakeXMLHttpRequest[];
-        respondImmediately: boolean;
 
         // Methods
         respondWith(body: string): void;
@@ -322,8 +325,15 @@ declare namespace Sinon {
         restore(): void;
     }
 
+    interface SinonFakeServerOptions {
+        autoRespond?: boolean;
+        autoRespondAfter?: number;
+        fakeHTTPMethods?: boolean;
+        respondImmediately?: boolean;
+    }
+
     interface SinonFakeServerStatic {
-        create(): SinonFakeServer;
+        create(options?: SinonFakeServerOptions): SinonFakeServer;
     }
 
     interface SinonStatic {
@@ -350,19 +360,20 @@ declare namespace Sinon {
         calledThrice(spy: SinonSpy): void;
         callCount(spy: SinonSpy, count: number): void;
         callOrder(...spies: SinonSpy[]): void;
-        calledOn(spy: SinonSpy, obj: any): void;
+        calledOn(spyOrSpyCall: SinonSpy | SinonSpyCall, obj: any): void;
         alwaysCalledOn(spy: SinonSpy, obj: any): void;
-        calledWith(spy: SinonSpy, ...args: any[]): void;
+        calledWith(spyOrSpyCall: SinonSpy | SinonSpyCall, ...args: any[]): void;
         alwaysCalledWith(spy: SinonSpy, ...args: any[]): void;
         neverCalledWith(spy: SinonSpy, ...args: any[]): void;
-        calledWithExactly(spy: SinonSpy, ...args: any[]): void;
+        calledWithExactly(spyOrSpyCall: SinonSpy | SinonSpyCall, ...args: any[]): void;
         alwaysCalledWithExactly(spy: SinonSpy, ...args: any[]): void;
-        calledWithMatch(spy: SinonSpy, ...args: any[]): void;
+        calledWithMatch(spyOrSpyCall: SinonSpy | SinonSpyCall, ...args: any[]): void;
         alwaysCalledWithMatch(spy: SinonSpy, ...args: any[]): void;
         neverCalledWithMatch(spy: SinonSpy, ...args: any[]): void;
-        threw(spy: SinonSpy): void;
-        threw(spy: SinonSpy, exception: string): void;
-        threw(spy: SinonSpy, exception: any): void;
+        calledWithNew(spyOrSpyCall: SinonSpy | SinonSpyCall): void;
+        threw(spyOrSpyCall: SinonSpy | SinonSpyCall): void;
+        threw(spyOrSpyCall: SinonSpy | SinonSpyCall, exception: string): void;
+        threw(spyOrSpyCall: SinonSpy | SinonSpyCall, exception: any): void;
         alwaysThrew(spy: SinonSpy): void;
         alwaysThrew(spy: SinonSpy, exception: string): void;
         alwaysThrew(spy: SinonSpy, exception: any): void;
@@ -494,6 +505,8 @@ declare namespace Sinon {
         usingPromise(promiseLibrary: any): SinonSandbox;
         verify(): void;
         verifyAndRestore(): void;
+        createStubInstance(constructor: any): any;
+        createStubInstance<TType>(constructor: StubbableType<TType>): SinonStubbedInstance<TType>;
     }
 
     interface SinonSandboxStatic {
@@ -558,6 +571,8 @@ declare namespace Sinon {
      * @template TType Object type being stubbed.
      */
     type SinonStubbedInstance<TType> = {
+        // TODO: this should really only replace functions on TType with SinonStubs, not all properties
+        // Likely infeasible without mapped conditional types, per https://github.com/Microsoft/TypeScript/issues/12424
         [P in keyof TType]: SinonStub;
     };
 }

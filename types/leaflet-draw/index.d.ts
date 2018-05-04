@@ -279,7 +279,7 @@ declare module 'leaflet' {
 			 *
 			 * Default value: L.Icon.Default()
 			 */
-			icon?: Icon;
+			icon?: Icon | DivIcon;
 
 			/**
 			 * This should be a high number to ensure that you can draw over all other layers on the map.
@@ -387,7 +387,7 @@ declare module 'leaflet' {
 			/**
 			 * Layer that was just created.
 			 */
-			layer: Layer;
+			layer: Circle | CircleMarker | Marker | Polygon | Polyline | Rectangle;
 
 			/**
 			 * The type of layer this is. One of: polyline, polygon, rectangle, circle, marker.

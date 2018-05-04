@@ -1,4 +1,4 @@
-// Type definitions for Draft.js v0.10.4
+// Type definitions for Draft.js v0.10.5
 // Project: https://facebook.github.io/draft-js/
 // Definitions by: Dmitry Rogozhny <https://github.com/dmitryrogozhny>
 //                 Eelco Lempsink <https://github.com/eelco>
@@ -7,8 +7,9 @@
 //                 Michael Wu <https://github.com/michael-yx-wu>
 //                 Willis Plummer <https://github.com/willisplummer>
 //                 Santiago Vilar <https://github.com/smvilar>
+//                 Ulf Schwekendiek <https://github.com/sulf>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
+// TypeScript Version: 2.6
 
 import * as React from 'react';
 import * as Immutable from 'immutable';
@@ -398,7 +399,7 @@ declare namespace Draft {
                 /**
                  * Given a `ContentBlock`, return an immutable List of decorator keys.
                  */
-                getDecorations(block: ContentBlock): Immutable.List<string>;
+                getDecorations(block: ContentBlock, contentState: ContentState): Immutable.List<string>;
 
                 /**
                  * Given a decorator key, return the component to use when rendering
@@ -456,7 +457,7 @@ declare namespace Draft {
             class CompositeDraftDecorator {
                 constructor(decorators: Array<DraftDecorator>);
 
-                getDecorations(block: ContentBlock): Immutable.List<string>;
+                getDecorations(block: ContentBlock, contentState: ContentState): Immutable.List<string>;
                 getComponentForKey(key: string): Function;
                 getPropsForKey(key: string): Object;
             }
@@ -746,7 +747,7 @@ declare namespace Draft {
             }
 
             class ContentState extends Record {
-                static createFromBlockArray(blocks: Array<ContentBlock>, entityMap: any): ContentState;
+                static createFromBlockArray(blocks: Array<ContentBlock>, entityMap?: any): ContentState;
                 static createFromText(text: string, delimiter?: string): ContentState;
 
                 createEntity(type: DraftEntityType, mutability: DraftEntityMutability, data?: Object): ContentState;
@@ -797,7 +798,7 @@ declare namespace Draft {
             class CharacterMetadata {
                 static applyStyle(record: CharacterMetadata, style: string): CharacterMetadata;
                 static removeStyle(record: CharacterMetadata, style: string): CharacterMetadata;
-                static applyEntity(record: CharacterMetadata, entityKey: string): CharacterMetadata;
+                static applyEntity(record: CharacterMetadata, entityKey: string | null): CharacterMetadata;
                 static applyEntity(record: CharacterMetadata): CharacterMetadata;
                 /**
                  * Use this function instead of the `CharacterMetadata` constructor.
@@ -894,7 +895,7 @@ declare namespace Draft {
 
                 static setBlockData(contentState: ContentState, selectionState: SelectionState, blockData: Immutable.Map<any, any>): ContentState;
                 static mergeBlockData(contentState: ContentState, selectionState: SelectionState, blockData: Immutable.Map<any, any>): ContentState;
-                static applyEntity(contentState: ContentState, selectionState: SelectionState, entityKey: string): ContentState;
+                static applyEntity(contentState: ContentState, selectionState: SelectionState, entityKey: string | null): ContentState;
             }
 
             class RichTextEditorUtil {
@@ -957,6 +958,7 @@ import ContentBlock = Draft.Model.ImmutableData.ContentBlock;
 import ContentState = Draft.Model.ImmutableData.ContentState;
 import SelectionState = Draft.Model.ImmutableData.SelectionState;
 import DraftInlineStyle = Draft.Model.ImmutableData.DraftInlineStyle;
+import BlockMap = Draft.Model.ImmutableData.BlockMap;
 
 import AtomicBlockUtils = Draft.Model.Modifier.AtomicBlockUtils;
 import KeyBindingUtil = Draft.Component.Utils.KeyBindingUtil;
@@ -1005,6 +1007,7 @@ export {
     ContentState,
     SelectionState,
     DraftInlineStyle,
+    BlockMap,
 
     AtomicBlockUtils,
     KeyBindingUtil,

@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import DS from 'ember-data';
+import DS, { ChangedAttributes } from 'ember-data';
 import { assertType } from "./lib/assert";
 
 const Person = DS.Model.extend({
@@ -27,3 +27,10 @@ assertType<string>(user.get('id'));
 assertType<string>(user.get('username'));
 assertType<boolean>(user.get('verified'));
 assertType<Date>(user.get('createdAt'));
+
+user.serialize();
+user.serialize({ includeId: true });
+user.serialize({ includeId: true });
+
+const attributes = user.changedAttributes();
+assertType<ChangedAttributes>(attributes);
